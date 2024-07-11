@@ -1,0 +1,244 @@
+<html><head><base href="https://matrixcalc.ai" /><title>Matrix Calculator - Advanced Matrix Operations</title><style>
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+        background-color: #f0f0f0;
+    }
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+        color: #333;
+        text-align: center;
+    }
+    .matrix-input {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .matrix-row {
+        display: flex;
+        gap: 5px;
+    }
+    input[type="number"] {
+        width: 50px;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 5px;
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+    #result {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #e9e9e9;
+        border-radius: 4px;
+    }
+    .controls {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+</style></head><body>
+    <div class="container">
+        <h1>Matrix Calculator</h1>
+        <p>Perform advanced matrix operations on matrices up to 7x7 in size.</p>
+        
+        <div class="controls">
+            <div>
+                <label for="rows">Rows:</label>
+                <input type="number" id="rows" min="1" max="7" value="3">
+                <label for="cols">Columns:</label>
+                <input type="number" id="cols" min="1" max="7" value="3">
+                <button onclick="createMatrix()">Create Matrix</button>
+            </div>
+            <div>
+                <button onclick="createSecondMatrix()">Create Second Matrix</button>
+            </div>
+        </div>
+
+        <div id="matrixA" class="matrix-input"></div>
+        <div id="matrixB" class="matrix-input" style="display:none;"></div>
+
+        <button onclick="calculateDeterminant()">Determinant</button>
+        <button onclick="calculateInverse()">Inverse</button>
+        <button onclick="calculateTranspose()">Transpose</button>
+        <button onclick="addMatrices()">Add</button>
+        <button onclick="multiplyMatrices()">Multiply</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let matrixA, matrixB;
+
+        function createMatrix() {
+            const rows = parseInt(document.getElementById('rows').value);
+            const cols = parseInt(document.getElementById('cols').value);
+            const matrixDiv = document.getElementById('matrixA');
+            matrixDiv.innerHTML = '';
+
+            for (let i = 0; i < rows; i++) {
+                const row = document.createElement('div');
+                row.className = 'matrix-row';
+                for (let j = 0; j < cols; j++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.value = 0;
+                    row.appendChild(input);
+                }
+                matrixDiv.appendChild(row);
+            }
+        }
+
+        function createSecondMatrix() {
+            const rows = parseInt(document.getElementById('rows').value);
+            const cols = parseInt(document.getElementById('cols').value);
+            const matrixDiv = document.getElementById('matrixB');
+            matrixDiv.innerHTML = '';
+            matrixDiv.style.display = 'block';
+
+            for (let i = 0; i < rows; i++) {
+                const row = document.createElement('div');
+                row.className = 'matrix-row';
+                for (let j = 0; j < cols; j++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.value = 0;
+                    row.appendChild(input);
+                }
+                matrixDiv.appendChild(row);
+            }
+        }
+
+        function getMatrixValues(matrixId) {
+            const matrixDiv = document.getElementById(matrixId);
+            const rows = matrixDiv.children.length;
+            const cols = matrixDiv.children[0].children.length;
+            const matrix = [];
+
+            for (let i = 0; i < rows; i++) {
+                matrix[i] = [];
+                for (let j = 0; j < cols; j++) {
+                    matrix[i][j] = parseFloat(matrixDiv.children[i].children[j].value);
+                }
+            }
+
+            return matrix;
+        }
+
+        function calculateDeterminant() {
+            matrixA = getMatrixValues('matrixA');
+            if (matrixA.length !== matrixA[0].length) {
+                document.getElementById('result').innerHTML = "Error: Matrix must be square to calculate determinant.";
+                return;
+            }
+            const det = determinant(matrixA);
+            document.getElementById('result').innerHTML = `Determinant: ${det}`;
+        }
+
+        function calculateInverse() {
+            matrixA = getMatrixValues('matrixA');
+            if (matrixA.length !== matrixA[0].length) {
+                document.getElementById('result').innerHTML = "Error: Matrix must be square to calculate inverse.";
+                return;
+            }
+            const inv = inverse(matrixA);
+            document.getElementById('result').innerHTML = `Inverse:<br>${matrixToString(inv)}`;
+        }
+
+        function calculateTranspose() {
+            matrixA = getMatrixValues('matrixA');
+            const trans = transpose(matrixA);
+            document.getElementById('result').innerHTML = `Transpose:<br>${matrixToString(trans)}`;
+        }
+
+        function addMatrices() {
+            matrixA = getMatrixValues('matrixA');
+            matrixB = getMatrixValues('matrixB');
+            if (matrixA.length !== matrixB.length || matrixA[0].length !== matrixB[0].length) {
+                document.getElementById('result').innerHTML = "Error: Matrices must have the same dimensions for addition.";
+                return;
+            }
+            const sum = add(matrixA, matrixB);
+            document.getElementById('result').innerHTML = `Sum:<br>${matrixToString(sum)}`;
+        }
+
+        function multiplyMatrices() {
+            matrixA = getMatrixValues('matrixA');
+            matrixB = getMatrixValues('matrixB');
+            if (matrixA[0].length !== matrixB.length) {
+                document.getElementById('result').innerHTML = "Error: Number of columns in first matrix must equal number of rows in second matrix.";
+                return;
+            }
+            const product = multiply(matrixA, matrixB);
+            document.getElementById('result').innerHTML = `Product:<br>${matrixToString(product)}`;
+        }
+
+        function determinant(m) {
+            if (m.length === 1) return m[0][0];
+            if (m.length === 2) return m[0][0] * m[1][1] - m[0][1] * m[1][0];
+            let det = 0;
+            for (let i = 0; i < m.length; i++) {
+                det += Math.pow(-1, i) * m[0][i] * determinant(minor(m, 0, i));
+            }
+            return det;
+        }
+
+        function minor(m, row, col) {
+            return m.slice(0, row).concat(m.slice(row + 1)).map(r => r.slice(0, col).concat(r.slice(col + 1)));
+        }
+
+        function inverse(m) {
+            const det = determinant(m);
+            if (det === 0) return null;
+            const adj = adjugate(m);
+            return adj.map(row => row.map(val => val / det));
+        }
+
+        function adjugate(m) {
+            return transpose(cofactorMatrix(m));
+        }
+
+        function cofactorMatrix(m) {
+            return m.map((row, i) => row.map((_, j) => Math.pow(-1, i + j) * determinant(minor(m, i, j))));
+        }
+
+        function transpose(m) {
+            return m[0].map((_, i) => m.map(row => row[i]));
+        }
+
+        function add(a, b) {
+            return a.map((row, i) => row.map((val, j) => val + b[i][j]));
+        }
+
+        function multiply(a, b) {
+            return a.map(row => transpose(b).map(col => row.reduce((sum, cell, i) => sum + cell * col[i], 0)));
+        }
+
+        function matrixToString(m) {
+            return m.map(row => row.join(' ')).join('<br>');
+        }
+
+        // Initialize with a 3x3 matrix
+        createMatrix();
+    </script>
+</body></html>
